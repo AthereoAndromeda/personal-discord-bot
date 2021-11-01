@@ -8,7 +8,18 @@ Personal Discord Bot rewritten in TypeScript.
 [![Docker Image CI](https://github.com/AthereoAndromeda/CalNatSci-TS/actions/workflows/docker-image.yml/badge.svg)](https://github.com/AthereoAndromeda/Personal-Discord-Bot-TS/actions/workflows/docker-image.yml)
 
 </div>
- 
+
+## Fresh New Start
+This is a continuation of the `Personal-Discord-Bot-TS` git repo (now a Private Archive) on a new clean repo. The older repo had to be scrapped and restarted due to some errors.
+
+**Personal-Discord-Bot-TS Stats:**
+- First Commit: 25 February 2020
+- No. of Commits: 625
+- Last Commit: 1 November 2021
+- Age when Archived: 8 months
+
+
+## Description
 I was going to use the Google Classroom API to show new assignments and announcements right in Discord,
 but i didn't go through with it since I have to host my own site to redirect users to authorize for Google, and store users in a database. Then i have to find a good way of interfacing with the GClass API through Discord. This is a little too much, so i decided to not do it and maybe do it in a later date
 
