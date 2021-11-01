@@ -1,0 +1,13 @@
+{
+  "tabWidth": 2,
+  "arrowParens": "avoid",
+  "trailingComma": "es5",
+  "useTabs": false,
+  "semi": true,
+  "overrides": [
+    {
+      "files": ".swcrc",
+      "options": { "parser": "json" }
+    }
+  ]
+}

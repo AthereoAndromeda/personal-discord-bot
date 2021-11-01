@@ -1,0 +1,22 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  // previewFeatures = [""]
+}
+
+model Verse {
+  id      Int    @id @default(autoincrement())
+  title   String @default("Placeholder Title")
+  content String @default("Placeholder Content")
+}
+
+// Holds extra information for Discord servers
+// (known as guilds) like prefixes
+model Guild {
+  id     String @id 
+  prefix String @default("mc!") @db.VarChar(10)
+}

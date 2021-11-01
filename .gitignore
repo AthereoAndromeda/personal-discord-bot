@@ -1,0 +1,8 @@
+node_modules
+others
+*.env
+.vscode
+dist
+!example.env
+logs
+coverage
