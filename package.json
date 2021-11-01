@@ -33,6 +33,7 @@
   "homepage": "https://github.com/redstripez08/CalNatSci-TS#readme",
   "dependencies": {
     "@discordjs/builders": "^0.8.2",
+    "@discordjs/collection": "^0.3.2",
     "@prisma/client": "^3.3.0",
     "colorette": "^2.0.16",
     "common-tags": "^1.8.0",
