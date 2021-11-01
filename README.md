@@ -13,7 +13,7 @@ Personal Discord Bot rewritten in TypeScript.
 This is a continuation of the `Personal-Discord-Bot-TS` git repo (now a Private Archive) on a new clean repo. The older repo had to be scrapped and restarted due to some errors.
 
 **Personal-Discord-Bot-TS Stats:**
-- First Commit: 25 February 2020
+- First Commit: 25 February 2021
 - No. of Commits: 625
 - Last Commit: 1 November 2021
 - Age when Archived: 8 months
