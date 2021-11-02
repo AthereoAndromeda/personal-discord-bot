@@ -12,6 +12,8 @@ import { Command } from "../../../typings";
 import { charSlicer, randomHex } from "../../utils";
 const { TIMEZONE = "UTC" } = process.env;
 const timeout = 120 * 1000;
+// Matches for words within brackets. ex: [Hello World]
+const ud_links = /\[(\w| )+\]/gi;
 
 interface ListData {
   definition: string;
@@ -33,9 +35,10 @@ interface APIResponse {
 
 /**
  * Converts Urban Dictionary Links into Discord-compatible ones
- * @param matches Array of Urban Dictionary links
- * @param str Whole paragraph
- * @returns Whole paragraph with Discord-compatible links
+ * @param matches   Array of Urban Dictionary links
+ * @param str       String to convert
+ *
+ * @returns String with Discord-compatible links
  */
 function swapLinks(matches: RegExpMatchArray | null, str: string): string {
   matches = matches ? matches : [];
@@ -45,7 +48,8 @@ function swapLinks(matches: RegExpMatchArray | null, str: string): string {
       // Removes brackets surrounding word
       const linkWord = link.slice(1, -1);
       const regex = new RegExp(`\\[${linkWord}\\]`);
-      // Replace spaces with '%20' for links;
+
+      // Replace spaces with '%20' for links
       const term = linkWord.replace(/ +/g, "%20");
       const embedLink = `[${linkWord}](https://www.urbandictionary.com/define.php?term=${term})`;
       str = str.replace(regex, embedLink);
@@ -55,23 +59,27 @@ function swapLinks(matches: RegExpMatchArray | null, str: string): string {
   return str;
 }
 
-function buildEmbed(res: ListData) {
-  const date = DateTime.fromISO(res.written_on)
+/**
+ * Builds the Embed with the given Data
+ * @param data  Response of Urban Dictionary
+ *
+ * @returns MessageEmbed of an Urban Dictionary Definition
+ */
+function buildEmbed(data: ListData) {
+  const date = DateTime.fromISO(data.written_on)
     .setZone(TIMEZONE)
     .toFormat("yyyy LLL dd, t ZZZZ");
 
-  // Matches for words within brackets. ex: [Hello World]
-  const ud_links = /\[(\w| )+\]/gi;
-  const linkMatches = res.definition.match(ud_links);
-  const exLinkMatches = res.example.match(ud_links);
+  const linkMatches = data.definition.match(ud_links);
+  const exLinkMatches = data.example.match(ud_links);
 
-  const definition = swapLinks(linkMatches, res.definition);
-  const example = swapLinks(exLinkMatches, res.example);
+  const definition = swapLinks(linkMatches, data.definition);
+  const example = swapLinks(exLinkMatches, data.example);
 
   return new MessageEmbed()
-    .setTitle(res.word)
-    .setURL(res.permalink)
-    .setAuthor("Author: " + res.author)
+    .setTitle(data.word)
+    .setURL(data.permalink)
+    .setAuthor("Author: " + data.author)
     .setColor(randomHex())
     .setDescription(charSlicer(definition))
     .addField("Example", charSlicer(example, 1024) || "No Example")
@@ -79,12 +87,17 @@ function buildEmbed(res: ListData) {
       // \u{1F44D} - 👍 | :thumbsup:
       // \u{1F44E} - 👎 | :thumbsdown:
       stripIndents`
-        ${res.thumbs_up} \u{1F44D} | ${res.thumbs_down} \u{1F44E}
+        ${data.thumbs_up} \u{1F44D} | ${data.thumbs_down} \u{1F44E}
         Written on: ${date}
       `
     );
 }
 
+/**
+ * Set up the listeners for message components (buttons)
+ * @param int            Interaction to listen
+ * @param definitions    Definitions of Urban Dictionary
+ */
 function setMessageComponentListeners(int: Message, definitions: ListData[]) {
   let position = 0;
 
@@ -122,10 +135,8 @@ function setMessageComponentListeners(int: Message, definitions: ListData[]) {
 
   // Either collector works
   nextCollector.on("end", () => {
-    int.edit({
-      components: [getRow(true)]
-    });
-  })
+    int.edit({ components: [getRow(true)] });
+  });
 }
 
 async function fetchData(client: MyClient, arg: string) {
@@ -237,4 +248,3 @@ export default <Command>{
     }
   },
 };
-
