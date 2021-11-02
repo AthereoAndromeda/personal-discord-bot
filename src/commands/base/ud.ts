@@ -11,6 +11,7 @@ import { MyClient } from "src/classes/Client";
 import { Command } from "../../../typings";
 import { charSlicer, randomHex } from "../../utils";
 const { TIMEZONE = "UTC" } = process.env;
+const timeout = 120 * 1000;
 
 interface ListData {
   definition: string;
@@ -86,35 +87,42 @@ function setMessageComponentListeners(int: Message, definitions: ListData[]) {
 
   const prevCollector = int.createMessageComponentCollector({
     filter: i => i.customId === "prev",
-    time: 120 * 1000,
+    time: timeout,
   });
 
   const nextCollector = int.createMessageComponentCollector({
     filter: i => i.customId === "next",
-    time: 120 * 1000,
+    time: timeout,
   });
 
-  prevCollector.on("collect", i => {
+  prevCollector.on("collect", async i => {
     if (position > 0) {
       position--;
+
       const embed = buildEmbed(definitions[position]);
-      i.update({ embeds: [embed] });
-      return;
+      await i.update({ embeds: [embed] });
+    } else {
+      await i.reply({ content: "Reached First Page", ephemeral: true });
     }
-    // Empty update to prevent showing error in Discord
-    i.update({});
   });
 
-  nextCollector.on("collect", i => {
+  nextCollector.on("collect", async i => {
     if (position < definitions.length - 1) {
       position++;
+
       const embed = buildEmbed(definitions[position]);
-      i.update({ embeds: [embed] });
-      return;
+      await i.update({ embeds: [embed] });
+    } else {
+      await i.reply({ content: "Reached Last Page", ephemeral: true });
     }
-    // Empty update to prevent showing error in Discord
-    i.update({});
   });
+
+  // Either collector works
+  nextCollector.on("end", () => {
+    int.edit({
+      components: [getRow(true)]
+    });
+  })
 }
 
 async function fetchData(client: MyClient, arg: string) {
@@ -134,17 +142,19 @@ async function fetchData(client: MyClient, arg: string) {
   return data;
 }
 
-function getRow() {
+function getRow(isDisabled = false) {
   const previousButton = new MessageButton()
     .setCustomId("prev")
     .setLabel("Previous")
     .setStyle("SECONDARY")
+    .setDisabled(isDisabled)
     .setEmoji("\u25C0"); // ◀️ | ◀ | :arrow_backward:
 
   const forwardButton = new MessageButton()
     .setCustomId("next")
     .setLabel("Next")
     .setStyle("PRIMARY")
+    .setDisabled(isDisabled)
     .setEmoji("\u25B6"); // ▶️ | ▶ | :arrow_forward:
 
   return new MessageActionRow().addComponents(previousButton, forwardButton);
@@ -152,7 +162,7 @@ function getRow() {
 
 const row = getRow();
 
-const command: Command = {
+export default <Command>{
   data: {
     name: "ud",
     description: "Fetches a definition of the given term from Urban Dictionary",
@@ -225,4 +235,3 @@ const command: Command = {
   },
 };
 
-export default command;
