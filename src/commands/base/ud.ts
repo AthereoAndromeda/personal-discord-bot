@@ -37,7 +37,9 @@ interface APIResponse {
  * @param str Whole paragraph
  * @returns Whole paragraph with Discord-compatible links
  */
-function swapLinks(matches: RegExpMatchArray, str: string): string {
+function swapLinks(matches: RegExpMatchArray | null, str: string): string {
+  matches = matches ? matches : [];
+
   if (matches.length) {
     for (const link of matches) {
       // Removes brackets surrounding word
@@ -49,6 +51,7 @@ function swapLinks(matches: RegExpMatchArray, str: string): string {
       str = str.replace(regex, embedLink);
     }
   }
+
   return str;
 }
 
@@ -59,8 +62,8 @@ function buildEmbed(res: ListData) {
 
   // Matches for words within brackets. ex: [Hello World]
   const ud_links = /\[(\w| )+\]/gi;
-  const linkMatches = res.definition.match(ud_links) || [];
-  const exLinkMatches = res.example.match(ud_links) || [];
+  const linkMatches = res.definition.match(ud_links);
+  const exLinkMatches = res.example.match(ud_links);
 
   const definition = swapLinks(linkMatches, res.definition);
   const example = swapLinks(exLinkMatches, res.example);
@@ -76,9 +79,9 @@ function buildEmbed(res: ListData) {
       // \u{1F44D} - 👍 | :thumbsup:
       // \u{1F44E} - 👎 | :thumbsdown:
       stripIndents`
-                ${res.thumbs_up} \u{1F44D} | ${res.thumbs_down} \u{1F44E}
-                Written on: ${date}
-            `
+        ${res.thumbs_up} \u{1F44D} | ${res.thumbs_down} \u{1F44E}
+        Written on: ${date}
+      `
     );
 }
 
