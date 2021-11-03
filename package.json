@@ -40,9 +40,9 @@
     "discord.js": "^13.3.1",
     "got": "^11.8.2",
     "luxon": "^2.1.1",
+    "pino": "^7.2.0",
     "prisma": "^3.4.2",
-    "ts-essentials": "^9.0.0",
-    "winston": "^3.3.3"
+    "ts-essentials": "^9.0.0"
   },
   "devDependencies": {
     "@swc/cli": "^0.1.51",
@@ -60,6 +60,7 @@
     "jest": "^27.3.1",
     "jest-extended": "^1.1.0",
     "jest-mock-extended": "^2.0.4",
+    "pino-pretty": "^7.2.0",
     "ts-node-dev": "^1.1.8",
     "typedoc": "^0.22.8",
     "typescript": "^4.4.4"
