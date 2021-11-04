@@ -12,8 +12,16 @@ import { Command } from "../../../typings";
 import { charSlicer, randomHex } from "../../utils";
 const { TIMEZONE = "UTC" } = process.env;
 const timeout = 120 * 1000;
-// Matches for words within brackets. ex: [Hello World]
-const ud_links = /\[(\w| )+\]/gi;
+
+/**
+ * Matches for everything within brackets, except for the brackets themselves.
+ * @example
+ * ```ts
+ * "[Heelo wORLD] [it's a world] [     ]" // true
+ * "[]" // false
+ * ```
+ */
+const ud_links = /\[[^\[\]]+\]/g;
 
 interface ListData {
   definition: string;
