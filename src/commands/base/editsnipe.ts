@@ -20,7 +20,7 @@ export default <Command>{
       },
       {
         name: "index",
-        description: "Indexes nth deleted message",
+        description: "Indexes nth edited message",
         type: "INTEGER",
         required: false,
       },
