@@ -3,6 +3,7 @@ import { gotErrorHandler } from "../utils";
 import { PrismaClient } from "@prisma/client";
 import { Command, MyInteraction, MyMessage, ReadyCommand } from "typings";
 import { Client, ClientOptions, Collection, WebhookClient } from "discord.js";
+import logger from "./logger";
 
 interface MyClientOptions extends ClientOptions {
   db: PrismaClient;
@@ -13,6 +14,7 @@ export class MyClient extends Client {
   private _readyCommands!: Collection<string, ReadyCommand>;
   private _prefixes = new Collection<string, string>();
   private _db: PrismaClient;
+  private _logger = logger;
 
   constructor(options: MyClientOptions) {
     super(options);
@@ -71,5 +73,8 @@ export class MyClient extends Client {
   public get $got(): Got {
     return got;
   }
-  
+
+  public get log() {
+    return this._logger;
+  }
 }
