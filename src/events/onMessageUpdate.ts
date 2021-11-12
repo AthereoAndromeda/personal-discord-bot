@@ -1,6 +1,6 @@
 import { editSnipes, SnipeObject } from "../classes/Snipes";
 import { EventHandler, MyMessage } from "../../typings";
-import { Queue } from "../classes/Queue";
+import { StaticQueue } from "../classes/StaticQueue";
 
 export default <EventHandler>{
   name: "messageUpdate",
@@ -12,18 +12,20 @@ export default <EventHandler>{
       let snipeQueue = editSnipes.get(message.channelId);
 
       if (!snipeQueue) {
-        editSnipes.set(message.channelId, new Queue<SnipeObject>());
-        snipeQueue = editSnipes.get(message.channelId);
+        snipeQueue = new StaticQueue<SnipeObject>(
+          parseInt(process.env.MAX_SNIPES ?? "10")
+        );
+        editSnipes.set(message.channelId, snipeQueue);
       }
 
-      snipeQueue?.enqueue({
+      snipeQueue.enQueue({
         content: message.content,
         authorId: message.author.id,
         timestamp: Date.now(),
       });
 
-      if (snipeQueue?.length === parseInt(process.env.MAX_SNIPES ?? "10")) {
-        snipeQueue.dequeue();
+      if (snipeQueue.isFull) {
+        snipeQueue.deQueue();
       }
     } catch (error) {
       message.client.log.error(error);

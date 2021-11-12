@@ -1,5 +1,5 @@
 import Collection from "@discordjs/collection";
-import { Queue } from "./Queue";
+import { StaticQueue } from "./StaticQueue";
 
 export interface SnipeObject {
   authorId: string;
@@ -8,5 +8,5 @@ export interface SnipeObject {
   timestamp: number;
 }
 
-export const snipes = new Collection<string, Queue<SnipeObject>>();
-export const editSnipes = new Collection<string, Queue<SnipeObject>>();
+export const snipes = new Collection<string, StaticQueue<SnipeObject>>();
+export const editSnipes = new Collection<string, StaticQueue<SnipeObject>>();
