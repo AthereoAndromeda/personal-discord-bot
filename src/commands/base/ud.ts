@@ -1,3 +1,4 @@
+import type { MyClient } from "src/classes/Client";
 import { stripIndents } from "common-tags";
 import {
   Message,
@@ -7,7 +8,6 @@ import {
 } from "discord.js";
 import { RequestError } from "got/dist/source";
 import { DateTime } from "luxon";
-import { MyClient } from "src/classes/Client";
 import { Command } from "../../../typings";
 import { charSlicer, randomHex } from "../../utils";
 const { TIMEZONE = "UTC" } = process.env;
