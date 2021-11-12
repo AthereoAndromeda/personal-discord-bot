@@ -13,7 +13,7 @@ export function main(
   index = index ? index : 0;
 
   const queue = collection.get(channelId);
-  const snipedObject = queue?.peek(index);
+  const snipedObject = queue?.backPeek(index);
   const author = client.users.cache.get(snipedObject?.authorId ?? "");
   const channel = client.channels.cache.get(channelId);
 
