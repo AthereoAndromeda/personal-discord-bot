@@ -37,20 +37,21 @@ export default <EventHandler>{
 
     const commandData = client.commands.map(cmd => cmd.data);
 
+    const guildInfo = await client.db.guild.findMany();
+    const guildIds = guildInfo.map(guild => guild.id);
+
     for (const [guildId, guild] of client.guilds.cache) {
       await guild.commands.set(commandData);
-      await client.db.guild.upsert({
-        where: {
-          id: guildId,
-        },
-        create: {
-          id: guildId,
-        },
-        update: {},
-      });
+
+      if (!guildIds.includes(guildId)) {
+        await client.db.guild.upsert({
+          where: { id: guildId },
+          create: { id: guildId },
+          update: {},
+        });
+      }
     }
 
-    const guildInfo = await client.db.guild.findMany();
     for (const guild of guildInfo) {
       client.prefixes.set(guild.id, guild.prefix);
     }
