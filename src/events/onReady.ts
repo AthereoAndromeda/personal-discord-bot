@@ -29,8 +29,10 @@ export default <EventHandler>{
   type: "once",
   async handler(client: MyClient) {
     // Adds graceful shutdown
-    process.on("SIGINT", async () => await shutdownHandler(client));
-    process.on("SIGTERM", async () => await shutdownHandler(client));
+    process.on(
+      "SIGINT" || "SIGTERM" || "SIGKILL",
+      async () => await shutdownHandler(client)
+    );
 
     await client.db.$connect();
     client.log.info("Connected to Database");
