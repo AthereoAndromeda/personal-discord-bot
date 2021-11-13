@@ -1,6 +1,7 @@
 import Collection from "@discordjs/collection";
 import { StaticQueue } from "./StaticQueue";
 
+export type SnipeCollection = Collection<string, StaticQueue<SnipeObject>>;
 export interface SnipeObject {
   authorId: string;
   content: string;
@@ -8,5 +9,5 @@ export interface SnipeObject {
   timestamp: number;
 }
 
-export const snipes = new Collection<string, StaticQueue<SnipeObject>>();
-export const editSnipes = new Collection<string, StaticQueue<SnipeObject>>();
+export const snipes: SnipeCollection = new Collection();
+export const editSnipes: SnipeCollection = new Collection();

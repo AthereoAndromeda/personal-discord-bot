@@ -1,6 +1,6 @@
-import { SnipeObject, snipes } from "../classes/Snipes";
+import { snipes } from "../classes/Snipes";
 import { EventHandler, MyMessage } from "../../typings";
-import { StaticQueue } from "../classes/StaticQueue";
+import { storeSnipe } from "../helpers/storeSnipe"
 
 export default <EventHandler>{
   name: "messageDelete",
@@ -11,24 +11,7 @@ export default <EventHandler>{
 
     // Saves Deleted messages in database for `snipe` command.
     try {
-      let snipeQueue = snipes.get(message.channelId);
-
-      if (!snipeQueue) {
-        snipeQueue = new StaticQueue<SnipeObject>(
-          parseInt(process.env.MAX_SNIPES ?? "10")
-        );
-        snipes.set(message.channelId, snipeQueue);
-      }
-
-      snipeQueue.enQueue({
-        content: message.content,
-        authorId: message.author.id,
-        timestamp: Date.now(),
-      });
-
-      if (snipeQueue.isFull) {
-        snipeQueue.deQueue();
-      }
+      storeSnipe(message, snipes);
     } catch (error) {
       message.client.log.error(error);
     }
