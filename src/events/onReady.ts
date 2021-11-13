@@ -37,8 +37,8 @@ export default <EventHandler>{
     await client.db.$connect();
     client.log.info("Connected to Database");
 
+    await client.guilds.fetch();
     const commandData = client.commands.map(cmd => cmd.data);
-
     const guildInfo = await client.db.guild.findMany();
     const guildIds = guildInfo.map(guild => guild.id);
 
