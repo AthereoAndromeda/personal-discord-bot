@@ -59,7 +59,7 @@ function swapLinks(matches: RegExpMatchArray | null, str: string): string {
 
       // Replace spaces with '%20' for links
       const term = linkWord.replace(/ +/g, "%20");
-      const embedLink = `[${linkWord}](https://urbandictionary.com/define?term=${term})`;
+      const embedLink = `[${linkWord}](https://urbandictionary.com/define.php?term=${term})`;
       str = str.replace(regex, embedLink);
     }
   }
