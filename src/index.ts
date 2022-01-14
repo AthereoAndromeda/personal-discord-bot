@@ -17,12 +17,20 @@ async function setCommands(client: MyClient) {
     const commandImport = await import(`./commands/ready/${commandFile}`);
     const command: ReadyCommand = commandImport.default;
 
+    if (command.isDisabled) {
+      continue;
+    }
+
     readyCommands.set(command.name, command);
   }
 
   for (const commandFile of await baseFiles) {
     const commandImport = await import(`./commands/base/${commandFile}`);
     const command: Command = commandImport.default;
+
+    if (command.isDisabled) {
+      continue;
+    }
 
     baseCommands.set(command.data.name, command);
   }

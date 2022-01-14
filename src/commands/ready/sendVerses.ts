@@ -11,6 +11,7 @@ if (!VERSES_WEBHOOK_ID || !VERSES_WEBHOOK_TOKEN || !IANA_TIMEZONE) {
 let isSent = false;
 const command: ReadyCommand = {
   name: "sendverses",
+  isDisabled: true,
   execute(client) {
     setInterval(async () => {
       const date = DateTime.now().setZone(IANA_TIMEZONE);

@@ -25,6 +25,7 @@ export interface Command {
   guildOnly: boolean;
   argsRequired: boolean;
   rolesRequired: Record<string, unknown>[];
+  isDisabled?: boolean;
   /**
    * The actual command to be executed.
    * @param   message       Discord Message
@@ -36,6 +37,7 @@ export interface Command {
 
 export interface ReadyCommand {
   name: string;
+  isDisabled?: boolean;
   execute(client: MyClient): Promise<void> | void;
 }
 
