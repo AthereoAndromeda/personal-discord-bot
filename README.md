@@ -1,4 +1,4 @@
-# Personal-Discord-Bot-TS V3
+# Personal-Discord-Bot V3
 
 Personal Discord Bot rewritten in TypeScript.
 
@@ -20,7 +20,7 @@ This is a continuation of the `Personal-Discord-Bot-TS` git repo (now a Private 
 
 
 ## Description
-This bot basically does whatever I want in my servers. It has a host of commands, such as sniping, waifus, and other stuff. This bot got a lot more complex and larger than I expected it to be, it originally had no database, then i upgraded to SQLite3, then to PostgreSQL. Big thanks to my friends who kept me motivated to work and gave ideas for my personal mini-project 😄
+This bot basically does whatever I want for my Discord servers. It has a somewhat large selection of commands, such as sniping, fetching data from APIs, and other stuff. This bot got a lot more complex and larger than I expected it to be, it originally had no database, then i upgraded to SQLite3, then to PostgreSQL. Big thanks to my friends who kept me motivated to work and gave ideas for my personal mini-project 😄
 
 I was going to use the Google Classroom API to show new assignments and announcements right in Discord,
 but i didn't go through with it since I have to host my own site to redirect users to authorize for Google, and store users in a database. Then i have to find a good way of interfacing with the GClass API through Discord. This is a little too much, so i decided to not do it and maybe do it in a later date
