@@ -9,8 +9,8 @@ if (!VERSES_WEBHOOK_ID || !VERSES_WEBHOOK_TOKEN || !IANA_TIMEZONE) {
 }
 
 let isSent = false;
-const command: ReadyCommand = {
-  name: "sendverses",
+export default <ReadyCommand>{
+  data: { name: "sendverses" },
   isDisabled: true,
   execute(client) {
     setInterval(async () => {
@@ -44,5 +44,3 @@ const command: ReadyCommand = {
     }, 60 * 1000);
   },
 };
-
-export default command;

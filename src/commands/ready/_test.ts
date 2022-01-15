@@ -1,7 +1,7 @@
 import { ReadyCommand } from "typings";
 
 const command: ReadyCommand = {
-  name: "test",
+  data: { name: "test" },
   async execute() {
     // Test stuff
   },

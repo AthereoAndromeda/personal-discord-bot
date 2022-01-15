@@ -36,7 +36,7 @@ export interface Command {
 }
 
 export interface ReadyCommand {
-  name: string;
+  data: { name: string };
   isDisabled?: boolean;
   execute(client: MyClient): Promise<void> | void;
 }
