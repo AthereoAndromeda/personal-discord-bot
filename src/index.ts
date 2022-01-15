@@ -6,37 +6,22 @@ import { Command, EventHandler, ReadyCommand } from "typings";
 import { MyClient } from "./classes/Client";
 import { checkNodeEnv } from "./utils";
 
-async function setCommands(client: MyClient) {
-  const baseFiles = fsp.readdir(path.resolve(__dirname, "./commands/base/"));
-  const readyFiles = fsp.readdir(path.resolve(__dirname, "./commands/ready/"));
+async function setCommandsInCollection<K, V>(
+  dirPath: string,
+  collection: Collection<K, V>
+) {
+  const files = await fsp.readdir(path.resolve(__dirname, dirPath));
 
-  const baseCommands = new Collection<string, Command>();
-  const readyCommands = new Collection<string, ReadyCommand>();
-
-  for (const commandFile of await readyFiles) {
-    const commandImport = await import(`./commands/ready/${commandFile}`);
-    const command: ReadyCommand = commandImport.default;
-
-    if (command.isDisabled) {
-      continue;
-    }
-
-    readyCommands.set(command.name, command);
-  }
-
-  for (const commandFile of await baseFiles) {
-    const commandImport = await import(`./commands/base/${commandFile}`);
-    const command: Command = commandImport.default;
+  for (const file of files) {
+    const commandPath = path.resolve(dirPath, file);
+    const command = (await import(commandPath)).default;
 
     if (command.isDisabled) {
       continue;
     }
 
-    baseCommands.set(command.data.name, command);
+    collection.set(command.name, command);
   }
-
-  client.setCommands(baseCommands);
-  client.setReadyCommands(readyCommands);
 }
 
 async function setEventHandlers(client: MyClient) {
@@ -73,7 +58,14 @@ async function setEventHandlers(client: MyClient) {
     db: prisma,
   });
 
-  await setCommands(client);
+  const baseCommands = new Collection<string, Command>();
+  const readyCommands = new Collection<string, ReadyCommand>();
+
+  await setCommandsInCollection("./commands/base/", baseCommands);
+  await setCommandsInCollection("./commands/ready/", readyCommands);
+  client.setCommands(baseCommands);
+  client.setReadyCommands(readyCommands);
+
   await setEventHandlers(client);
 
   try {
