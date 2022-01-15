@@ -1,77 +1,20 @@
-import { oneLine, stripIndents } from "common-tags";
+import { stripIndents } from "common-tags";
 import {
   Collection,
   Message,
   MessageActionRow,
-  MessageButton,
   MessageEmbed,
 } from "discord.js";
 import { Command } from "../../../typings";
+import {
+  endPoll,
+  endRow,
+  getTopButtonArray,
+  OptionData,
+  OptionInfo,
+} from "../helpers/poll";
 
-type OptionData = {
-  id: number;
-  element: string;
-};
-
-interface OptionInfo {
-  count: number;
-  element: string;
-}
-
-function endPoll(
-  fetchedInt: Message,
-  embed: MessageEmbed,
-  info: Collection<string, OptionInfo>
-) {
-  const totalVotes = info.reduce((acc, val) => acc + val.count, 0);
-
-  for (const [id, inf] of info) {
-    const percentage = ((inf.count / totalVotes) * 100).toFixed(2);
-    const text = oneLine`
-            **${inf.count} ${inf.count > 1 ? "votes" : "vote"}**
-            | ${percentage}%
-        `;
-
-    embed.addField(`Choice ${id} | ${inf.element}`, text);
-  }
-
-  embed.setFooter(`Total Votes: ${totalVotes}`);
-  fetchedInt.channel?.send({ embeds: [embed] });
-  fetchedInt.delete();
-}
-
-function getTopButtonArray(optionArr: OptionData[]) {
-  const arr: MessageButton[] = [];
-
-  let style = 0;
-  for (const el of optionArr) {
-    // Alternates style
-    if (style === 1) {
-      style--;
-    } else {
-      style++;
-    }
-
-    const button = new MessageButton()
-      .setCustomId(`top_${el.id}`)
-      .setLabel(`Option ${el.id}`)
-      .setStyle(style === 1 ? "PRIMARY" : "SECONDARY");
-
-    arr.push(button);
-  }
-
-  return arr;
-}
-
-const endRow = new MessageActionRow().addComponents(
-  new MessageButton()
-    .setCustomId("end")
-    .setStyle("DANGER")
-    .setLabel("End Poll")
-    .setEmoji("\u2705") // ✅ | :white_check_mark:
-);
-
-const command: Command = {
+export default <Command>{
   data: {
     name: "poll",
     description: "Creates a poll",
@@ -138,7 +81,7 @@ const command: Command = {
   guildOnly: false,
   argsRequired: true,
   rolesRequired: [],
-  async executeMessage(message) {
+  executeMessage(message) {
     message.reply({ content: "Use slash command version of poll" });
     return;
   },
@@ -151,9 +94,9 @@ const command: Command = {
     const info = new Collection<string, OptionInfo>();
 
     const text = stripIndents`
-            ${description}
-            The voting will end in **${timeout} seconds**
-        `;
+      ${description}
+      The voting will end in **${timeout} seconds**
+    `;
 
     const baseEmbed = new MessageEmbed()
       .setColor("BLURPLE")
@@ -177,7 +120,7 @@ const command: Command = {
     }
 
     for (const { id, element } of optionArray) {
-      baseEmbed.addField(`Option ${id}`, element);
+      baseEmbed.addField(`__Option ${id}__`, element);
     }
 
     console.log(optionArray);
@@ -197,6 +140,11 @@ const command: Command = {
 
     endPollCollector.on("collect", i => {
       if (i.user.id !== interaction.user.id) {
+        i.reply({
+          content: `<@!${i.user.id}>, Only the poll owner can end the poll early!`,
+          ephemeral: true,
+        });
+
         return;
       }
 
@@ -208,12 +156,13 @@ const command: Command = {
     });
 
     // TODO Allow vote removal and prevent multiple votes
-    for (const el of optionArray) {
+    for (const option of optionArray) {
       let count = 0;
-      info.set(`${el.id}`, { count, element: el.element });
+      const voters: string[] = [];
+      info.set(`${option.id}`, { count, element: option.element, voters });
 
       const collector = fetchedInt.createMessageComponentCollector({
-        filter: int => int.customId === `top_${el.id}`,
+        filter: int => int.customId === `top_${option.id}`,
         time: timeout * 1000,
       });
 
@@ -221,7 +170,9 @@ const command: Command = {
         console.log(int.user.tag);
 
         count++;
-        info.set(`${el.id}`, { count, element: el.element });
+        voters.push(int.user.id);
+        info.set(`${option.id}`, { count, element: option.element, voters });
+
         console.log(info);
 
         int.update(`Collected ${int.customId} from ${int.user.tag}`);
@@ -229,5 +180,3 @@ const command: Command = {
     }
   },
 };
-
-export default command;
