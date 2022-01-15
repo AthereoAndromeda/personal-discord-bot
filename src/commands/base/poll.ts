@@ -1,77 +1,16 @@
-import { oneLine, stripIndents } from "common-tags";
-import {
-  Collection,
-  Message,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
-} from "discord.js";
+import { Collection, Message, MessageActionRow } from "discord.js";
 import { Command } from "../../../typings";
+import {
+  baseEmbedBuilder,
+  endEmbedBuilder,
+  endPoll,
+  endRow,
+  getTopButtonArray,
+  OptionData,
+  OptionInfo,
+} from "../helpers/poll";
 
-type OptionData = {
-  id: number;
-  element: string;
-};
-
-interface OptionInfo {
-  count: number;
-  element: string;
-}
-
-function endPoll(
-  fetchedInt: Message,
-  embed: MessageEmbed,
-  info: Collection<string, OptionInfo>
-) {
-  const totalVotes = info.reduce((acc, val) => acc + val.count, 0);
-
-  for (const [id, inf] of info) {
-    const percentage = ((inf.count / totalVotes) * 100).toFixed(2);
-    const text = oneLine`
-            **${inf.count} ${inf.count > 1 ? "votes" : "vote"}**
-            | ${percentage}%
-        `;
-
-    embed.addField(`Choice ${id} | ${inf.element}`, text);
-  }
-
-  embed.setFooter(`Total Votes: ${totalVotes}`);
-  fetchedInt.channel?.send({ embeds: [embed] });
-  fetchedInt.delete();
-}
-
-function getTopButtonArray(optionArr: OptionData[]) {
-  const arr: MessageButton[] = [];
-
-  let style = 0;
-  for (const el of optionArr) {
-    // Alternates style
-    if (style === 1) {
-      style--;
-    } else {
-      style++;
-    }
-
-    const button = new MessageButton()
-      .setCustomId(`top_${el.id}`)
-      .setLabel(`Option ${el.id}`)
-      .setStyle(style === 1 ? "PRIMARY" : "SECONDARY");
-
-    arr.push(button);
-  }
-
-  return arr;
-}
-
-const endRow = new MessageActionRow().addComponents(
-  new MessageButton()
-    .setCustomId("end")
-    .setStyle("DANGER")
-    .setLabel("End Poll")
-    .setEmoji("\u2705") // ✅ | :white_check_mark:
-);
-
-const command: Command = {
+export default <Command>{
   data: {
     name: "poll",
     description: "Creates a poll",
@@ -138,38 +77,28 @@ const command: Command = {
   guildOnly: false,
   argsRequired: true,
   rolesRequired: [],
-  async executeMessage(message) {
+  executeMessage(message) {
     message.reply({ content: "Use slash command version of poll" });
     return;
   },
   async executeInteraction(interaction) {
     const title = interaction.options.getString("title", true);
     const description = interaction.options.getString("description", true);
-    // const isSingleVote = interaction.options.getBoolean("single_vote");
+    const isSingleVote = interaction.options.getBoolean("single_vote");
     const timeout = interaction.options.getInteger("timeout") || 180;
 
+    // Setup MessageEmbed
     const info = new Collection<string, OptionInfo>();
-
-    const text = stripIndents`
-            ${description}
-            The voting will end in **${timeout} seconds**
-        `;
-
-    const baseEmbed = new MessageEmbed()
-      .setColor("BLURPLE")
-      .setTitle(title)
-      .setDescription(text);
-
-    const endEmbed = new MessageEmbed()
-      .setTitle(`**Poll Results** | ${title}`)
-      .setDescription(description)
-      .setColor("GREEN");
+    const text = `${description}\nThe voting will end in **${timeout} seconds**`;
+    const baseEmbed = baseEmbedBuilder(title, text);
+    const endEmbed = endEmbedBuilder(title, description);
 
     const optionArray: OptionData[] = [];
 
     // Iterate over options 1 through 5
     for (let i = 1; i <= 5; i++) {
       const element = interaction.options.getString(`option_${i}`);
+
       // Null check since options might be out of order
       if (element !== null) {
         optionArray.push({ id: i, element });
@@ -177,10 +106,8 @@ const command: Command = {
     }
 
     for (const { id, element } of optionArray) {
-      baseEmbed.addField(`Option ${id}`, element);
+      baseEmbed.addField(`__Option ${id}__`, element);
     }
-
-    console.log(optionArray);
 
     const topButtonArray = getTopButtonArray(optionArray);
     const topRow = new MessageActionRow().addComponents(...topButtonArray);
@@ -197,6 +124,11 @@ const command: Command = {
 
     endPollCollector.on("collect", i => {
       if (i.user.id !== interaction.user.id) {
+        i.reply({
+          content: `<@!${i.user.id}>, Only the poll owner can end the poll early!`,
+          ephemeral: true,
+        });
+
         return;
       }
 
@@ -207,27 +139,47 @@ const command: Command = {
       endPoll(fetchedInt, endEmbed, info);
     });
 
-    // TODO Allow vote removal and prevent multiple votes
-    for (const el of optionArray) {
+    const usersVoted: string[] = [];
+
+    for (const option of optionArray) {
       let count = 0;
-      info.set(`${el.id}`, { count, element: el.element });
+      const voters: string[] = [];
+      info.set(`${option.id}`, { count, element: option.element, voters });
 
       const collector = fetchedInt.createMessageComponentCollector({
-        filter: int => int.customId === `top_${el.id}`,
+        filter: int => int.customId === `top_${option.id}`,
         time: timeout * 1000,
       });
 
       collector.on("collect", int => {
-        console.log(int.user.tag);
+        if (isSingleVote && usersVoted.includes(int.user.id)) {
+          int.reply({
+            content: `<@!${int.user.id}>, you can only vote for one option!`,
+            ephemeral: true,
+          });
+          return;
+        }
 
-        count++;
-        info.set(`${el.id}`, { count, element: el.element });
-        console.log(info);
+        if (voters.includes(int.user.id)) {
+          count--;
+          voters.splice(voters.indexOf(int.user.id), 1);
+          usersVoted.splice(usersVoted.indexOf(int.user.id), 1);
 
-        int.update(`Collected ${int.customId} from ${int.user.tag}`);
+          int.update(`Removed ${int.customId} from ${int.user.tag}`);
+        } else {
+          count++;
+          voters.push(int.user.id);
+          usersVoted.push(int.user.id);
+
+          int.update(`Collected ${int.customId} from ${int.user.tag}`);
+        }
+
+        info.set(`${option.id}`, { count, element: option.element, voters });
+        // TODO make embed update with vote count
+
+        console.log(usersVoted);
+        console.log(count, voters, "\n", info);
       });
     }
   },
 };
-
-export default command;
