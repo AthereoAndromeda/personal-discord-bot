@@ -15,8 +15,8 @@
     "test": "jest --coverage"
   },
   "engines": {
-    "node": ">=16.6.1",
-    "npm": ">=8.0.0"
+    "node": "^16.x",
+    "npm": "^8.x"
   },
   "prisma": {
     "seed": "tsnd prisma/seed.ts"
