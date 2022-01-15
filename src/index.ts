@@ -10,7 +10,7 @@ async function setCommandsInCollection<K, V>(
   dirPath: string,
   collection: Collection<K, V>
 ) {
-  const files = await fsp.readdir(path.resolve(__dirname, dirPath));
+  const files = await fsp.readdir(dirPath);
 
   for (const file of files) {
     const commandPath = path.resolve(dirPath, file);
@@ -20,8 +20,11 @@ async function setCommandsInCollection<K, V>(
       continue;
     }
 
-    collection.set(command.name, command);
+    collection.set(command.data.name, command);
   }
+
+  // Return for convenience
+  return collection;
 }
 
 async function setEventHandlers(client: MyClient) {
@@ -61,8 +64,15 @@ async function setEventHandlers(client: MyClient) {
   const baseCommands = new Collection<string, Command>();
   const readyCommands = new Collection<string, ReadyCommand>();
 
-  await setCommandsInCollection("./commands/base/", baseCommands);
-  await setCommandsInCollection("./commands/ready/", readyCommands);
+  await setCommandsInCollection(
+    path.resolve(__dirname, "./commands/base/"),
+    baseCommands
+  );
+  await setCommandsInCollection(
+    path.resolve(__dirname, "./commands/ready/"),
+    readyCommands
+  );
+
   client.setCommands(baseCommands);
   client.setReadyCommands(readyCommands);
 
