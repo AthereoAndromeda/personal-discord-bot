@@ -88,7 +88,7 @@ export default <Command>{
   async executeInteraction(interaction) {
     const title = interaction.options.getString("title", true);
     const description = interaction.options.getString("description", true);
-    // const isSingleVote = interaction.options.getBoolean("single_vote");
+    const isSingleVote = interaction.options.getBoolean("single_vote");
     const timeout = interaction.options.getInteger("timeout") || 180;
 
     const info = new Collection<string, OptionInfo>();
@@ -113,6 +113,7 @@ export default <Command>{
     // Iterate over options 1 through 5
     for (let i = 1; i <= 5; i++) {
       const element = interaction.options.getString(`option_${i}`);
+
       // Null check since options might be out of order
       if (element !== null) {
         optionArray.push({ id: i, element });
@@ -155,7 +156,8 @@ export default <Command>{
       endPoll(fetchedInt, endEmbed, info);
     });
 
-    // TODO Allow vote removal and prevent multiple votes
+    const usersVoted: string[] = [];
+
     for (const option of optionArray) {
       let count = 0;
       const voters: string[] = [];
@@ -167,15 +169,31 @@ export default <Command>{
       });
 
       collector.on("collect", int => {
-        console.log(int.user.tag);
+        if (isSingleVote && usersVoted.includes(int.user.id)) {
+          int.reply({
+            content: `<@!${int.user.id}>, you can only vote for one option!`,
+            ephemeral: true,
+          });
+          return;
+        }
 
-        count++;
-        voters.push(int.user.id);
+        if (voters.includes(int.user.id)) {
+          count--;
+          voters.splice(voters.indexOf(int.user.id), 1);
+          usersVoted.splice(usersVoted.indexOf(int.user.id), 1);
+
+          int.update(`Removed ${int.customId} from ${int.user.tag}`);
+        } else {
+          count++;
+          usersVoted.push(int.user.id);
+          voters.push(int.user.id);
+
+          int.update(`Collected ${int.customId} from ${int.user.tag}`);
+        }
+
         info.set(`${option.id}`, { count, element: option.element, voters });
-
-        console.log(info);
-
-        int.update(`Collected ${int.customId} from ${int.user.tag}`);
+        console.log(usersVoted);
+        console.log(count, voters, "\n", info);
       });
     }
   },
