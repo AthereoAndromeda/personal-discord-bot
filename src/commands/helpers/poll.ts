@@ -70,3 +70,12 @@ export const endRow = new MessageActionRow().addComponents(
     .setLabel("End Poll")
     .setEmoji("\u2705") // ✅ | :white_check_mark:
 );
+
+export const baseEmbedBuilder = (title: string, text: string) =>
+  new MessageEmbed().setColor("BLURPLE").setTitle(title).setDescription(text);
+
+export const endEmbedBuilder = (title: string, description: string) =>
+  new MessageEmbed()
+    .setTitle(`**Poll Results** | ${title}`)
+    .setDescription(description)
+    .setColor("GREEN");

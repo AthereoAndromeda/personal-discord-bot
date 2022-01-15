@@ -1,12 +1,8 @@
-import { stripIndents } from "common-tags";
-import {
-  Collection,
-  Message,
-  MessageActionRow,
-  MessageEmbed,
-} from "discord.js";
+import { Collection, Message, MessageActionRow } from "discord.js";
 import { Command } from "../../../typings";
 import {
+  baseEmbedBuilder,
+  endEmbedBuilder,
   endPoll,
   endRow,
   getTopButtonArray,
@@ -91,22 +87,11 @@ export default <Command>{
     const isSingleVote = interaction.options.getBoolean("single_vote");
     const timeout = interaction.options.getInteger("timeout") || 180;
 
+    // Setup MessageEmbed
     const info = new Collection<string, OptionInfo>();
-
-    const text = stripIndents`
-      ${description}
-      The voting will end in **${timeout} seconds**
-    `;
-
-    const baseEmbed = new MessageEmbed()
-      .setColor("BLURPLE")
-      .setTitle(title)
-      .setDescription(text);
-
-    const endEmbed = new MessageEmbed()
-      .setTitle(`**Poll Results** | ${title}`)
-      .setDescription(description)
-      .setColor("GREEN");
+    const text = `${description}\nThe voting will end in **${timeout} seconds**`;
+    const baseEmbed = baseEmbedBuilder(title, text);
+    const endEmbed = endEmbedBuilder(title, description);
 
     const optionArray: OptionData[] = [];
 
@@ -123,8 +108,6 @@ export default <Command>{
     for (const { id, element } of optionArray) {
       baseEmbed.addField(`__Option ${id}__`, element);
     }
-
-    console.log(optionArray);
 
     const topButtonArray = getTopButtonArray(optionArray);
     const topRow = new MessageActionRow().addComponents(...topButtonArray);
@@ -185,13 +168,15 @@ export default <Command>{
           int.update(`Removed ${int.customId} from ${int.user.tag}`);
         } else {
           count++;
-          usersVoted.push(int.user.id);
           voters.push(int.user.id);
+          usersVoted.push(int.user.id);
 
           int.update(`Collected ${int.customId} from ${int.user.tag}`);
         }
 
         info.set(`${option.id}`, { count, element: option.element, voters });
+        // TODO make embed update with vote count
+
         console.log(usersVoted);
         console.log(count, voters, "\n", info);
       });
