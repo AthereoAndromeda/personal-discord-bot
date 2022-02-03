@@ -2,6 +2,7 @@ node_modules
 others
 *.env
 .vscode
+.nyc_output
 dist
 !example.env
 logs
