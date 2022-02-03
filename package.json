@@ -12,7 +12,8 @@
     "dev-build": "swc src -d dist",
     "start": "node .",
     "ts-dev": "tsnd --respawn --debug --transpile-only -r dotenv/config -- ./src/index.ts",
-    "test": "tap --ts"
+    "test": "tap --ts",
+    "posttest": "tap --coverage-report=text-lcov"
   },
   "engines": {
     "node": "^16.x",
