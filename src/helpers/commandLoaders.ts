@@ -1,4 +1,4 @@
-import { Collection } from "@discordjs/collection";
+import { Collection } from "discord.js";
 import fsp from "fs/promises";
 import path from "path";
 import { MyClient } from "src/classes/Client";
